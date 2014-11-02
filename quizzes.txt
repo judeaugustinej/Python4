@@ -1,0 +1,985 @@
+############################
+Lesson 1, Quiz 1
+Question 1:
+Which function method does the interpreter call to trigger a call of the function?
+__call__()
+
+Question 2:
+Which method of a will be called to evaluate the expression a * b?
+__mul__()
+(Mentor Comments: a.__mul__(b))
+
+Question 3:
+What does the type() built-in function return when you call it with a function as its argument?
+<class 'function'>
+
+Question 4:
+Which name in the types module refers to the type of a function?
+FunctionType
+
+Question 5:
+What is the name of the testing technique that tries to ensure that all the code is tested?
+Unit test
+
+Question 6:
+What is the primary restriction on the lambda?
+Lambda is restricted to functions which contains a single expression.
+So if writing expressions that continue over several lines, 
+it would be better to write a named function instead of lambda.
+(Mentor Comments:
+lambda connects to the idea of "anonymous function" i.e. you want
+the functionality but may not need to store it behind a name.  Typical use is "callbacks" or handlers embedded in control widgets
+like buttons.  In LISP and Scheme, lambdas are more at the heart of the language and may be any length.  Python's lambda is
+sometimes called "little lambda" for contrast (a play on the nursery rhyme "Mary had a little lamb(da)".)
+
+####
+Lesson 1, Project 1
+Here are your instructions:
+Extend the final definition of the composable object to allow it to be raised to positive integer powers. 
+This will require defining the __pow__ method. 
+For the purposes of this exercise assume that f**2 is the same as f*f, 
+f**3 is the same as f*f*f, and so on. So (f**3)(x) is f(f(f(x))). 
+
+If the argument is not an integer, the method should raise a TypeError exception, 
+and a ValueError if its value is non-positive.
+
+(Overall Comments:
+Excellent.
+
+Your implementation of __pow__ is quite succinct:
+
+    def __pow__(self, n):
+        "Return the n-th power of the function"
+        if not isinstance(n, int):
+            raise TypeError("n must be an integer.")
+        if n <= 0:
+            raise ValueError("n must be a positive integer.")
+        res = self.func
+        for _ in range(1, n):
+            res = self.__mul__(res)
+        return res
+
+I would recommend a list line of:
+
+    def __pow__(self, n):
+        "Return the n-th power of the function"
+        if not isinstance(n, int):
+            raise TypeError("n must be an integer.")
+        if n <= 0:
+            raise ValueError("n must be a positive integer.")
+        res = self.func
+        for _ in range(1, n):
+            res = self.__mul__(res)
+        return Composable(res)
+
+in case the __mul__ operation does not fire, so that the
+output is always a Composble type object.  Here's a similar
+implementation that leverages how self is already a Composable:
+
+    def __pow__(self, exp):
+        "Multiply a composable with itself exp number of times"
+        if not isinstance(exp, int):
+            raise TypeError("exponent must be an integer")
+        if not exp > 0:
+            raise ValueError("exponent must be positive")
+        
+        me = self  # if exp == 1, return me, else if exp == n, return me * me... n times
+        for _ in range(1, exp):  
+            me *= self            
+        return me
+
+Good work.
+)
+###########################################
+ 
+
+###########################################
+Lesson 2, Quiz 1
+Question 1:
+Which data types can be used to index a sequence?
+array
+(Mentor Comments:
+Q1 is asking about what objects do the indexing, not what can be indexed.
+an array can be indexed but you wouldn't use an array to index an array.
+What types of object may be used to extract elements from indexible sequences.  Not strings because 
+obj['string'] is how dicts and such work.  These are mappings, not sequences.
+)
+Corrections:
+Data types which can be used to index a sequence are integers and slices.
+
+Question 2:
+What is the best-known third-party package for numerical programming in Python?
+numpy
+(Mentor Comments:
+http://www.cio.com/article/728307/Python_gets_a_big_data_boost_from_DARPA
+(not the first time DARPA has funded Python development))
+
+Question 3:
+Which method of o is called when evaluating o[i]? (o and i should be part of the answer)
+o.__getitem__(i)
+  
+#######
+Lesson 2, Project 1
+Here are your instructions:
+Extend the definition of the two-dimensional list arr.array from the lesson to have it save a 
+three-dimensional structure rather than a two-dimensional one.
+###########################################
+
+
+
+###########################################
+Lesson 3, Quiz 1
+Question 1:
+What is the difference between extending a superclass' method and overriding a superclass' method?
+Extending a superclass' method is to define a method of the same name of the superclass' method with different number of arguments.
+Overriding a superclass' method is to define a method of the same name of the superclass' method with the same number of arguments and returns a different behavior.
+(Mentor Comments:
+it's not just about the number of arguments, same or different.
+The extending method actually calls the parent version of the method from within.)
+
+Question 2:
+What is the principal characteristic of a recursively-defined data structure?
+Other instances which a recursively-defined data structure is composed of must has the same type of object as it is.
+
+Question 3:
+What is delegation?
+Delegation is a technique to get some other class to do most of the work.
+Unlike inheritance which has an "is-a" relationship, delegation has a "has-a" one.
+Delegation is better than inheritance in case we do not need all of the other class's methods.
+
+(Mentor Comments:
+the word "delegate" has different meanings depending on the namespace.  It's often with reference to a design pattern where an object
+brings another on board, perhaps through composition rather than inheritance, to which it delegates specific tasks, such as
+writing to a PDF (example).  By "composition" I do not mean like "composables" in Lesson 1, but perhaps initializing with a 
+"specialist" object:
+
+    def setprinter(self, special_output = None):
+        if not special_output:
+            print_function = print # regular builtin (to console or text file)
+        else:
+            print_function = special_output # object for printing to PDF
+        return print_function
+
+Because Python allows multiple inheritance, it's easier to add "special sauce" through 
+a parent.  This is also called a "mixin" and it's common to delegate to a mixin as well.)
+
+
+######
+Lesson 3, Project 1
+Here are your instructions:
+Modify the logic of the Tree object to :
+
+a) Allow data to be stored as an additional attribute of each node 
+(the data should be passed as an additional argument to __init__()).
+
+b) provide a find() method that locates a key (whose value is passed to find() as an argument)
+and returns the data associated with the node; if the key is not present in the tree, the
+method should raise a KeyError exception.
+
+(Mentor Comments:
+Well done.
+Note that when the insert method has the responsibility to store data,
+the ValueError in case the same key is used, could be replaced with
+a data overrite assignment, i.e. using the same node twice is not an
+error but a chance to change node content:
+
+        else:
+            raise ValueError("Attempt to insert duplicate value")  # self.data = data
+could be:
+        else:
+            self.data = data
+###########################################
+
+
+
+###########################################
+Lesson 4, Quiz 1
+Question 1:
+What is the primary purpose of the publish-and-subscribe mechanism?
+This mechanism aims at providing loose coupling between the publisher and the subscriber: 
+neither need to have advance knowledge of the other, and the connections are created at run-time rather than determined in advance.
+
+Question 2:
+What does the Publisher object do if an already-registered object tries to register a new subscription?
+It will raise a ValueError indicating that multiple subscriptions are not allowed.
+
+Question 3:
+Why is it better to allow the registration of arbitrary methods?
+It will be more general-purpose.
+  
+#########
+Lesson 4, Project 1
+Here are your instructions:
+Modify the Subscriber.process() method so that the instance counts the number of times 
+the method has been called. 
+If, after processing the current message, it has processed three messages, 
+it unsubscribes itself. 
+Remove the unsubscribe code from the loop at the end of the main program, 
+since it should no longer be necessary. 
+Insert print() statements in your modified program until you think you have worked out 
+why it no longer operates correctly, and see if you can suggest a way to fix it 
+(whether or not you are able to implement your suggestion).
+  
+Answer:
+The problem is that only the Subscriber.process() is modified while the "multiplier" is not.
+As a result, the "multiplier" is not unsubscribed after being called three times.
+One way to fix this problem without modifying all subscribers' implementation is 
+to let the publisher count the number of times which the process() method of each subsriber has been called.
+A suitable data structure to handle this is a dictionary, which has keys as subcribers and 
+values as the number of process() method calls.
+
+(Overall Comments:
+You do have a solution here, although you do not make any comments about it.
+
+The core problem with the original is that unsubscribing would happen while the
+publish loop was looping over the same list being deleted from.  This would 
+result in skips.  Your way of booting a subscriber involves tracking a subscribers
+dict in the Publisher and doing unsubscribing as a separate process after 
+publishing.
+
+The more usual solution is to have each SimpleSubscriber maintain an 
+internal count of how often its process is called, and to unsubscribe itself.
+To prevent skipping, the publish process is aimed at a *copy* of the 
+self.subscribers list.  Everything goes smoothly:
+
+"""
+Lesson 4, Project 1
+"""
+
+class Publisher():
+    """Simple publisher class to demonstrate the observer pattern."""
+
+    def __init__(self):
+        self.subscribers = []
+
+    def subscribe(self, subscriber):
+        """Add subscriber to list of subscribers."""
+        if subscriber in self.subscribers:
+            raise ValueError("Multiple subscriptions are not allowed")
+        self.subscribers.append(subscriber)
+
+    def unsubscribe(self, subscriber):
+        """Remove subscriber from list of subscribers."""
+        if subscriber not in self.subscribers:
+            raise ValueError("Can only unsubscribe subscribers")
+        self.subscribers.remove(subscriber)
+
+    def publish(self, s):
+        """Publish s to each subscriber in the list of subscribers."""
+
+        for subscriber in self.subscribers[:]:  # slice with everything = copy
+            subscriber.process(s)
+
+
+class SimpleSubscriber:
+    """Simple subscriber class to demonstrate the observer pattern."""
+
+    def __init__(self, name, publisher, process_max=3):
+        self.name = name
+        self.publisher = publisher
+        self.process_max = process_max
+        self.process_ct = 0
+        publisher.subscribe(self)
+
+    def process(self, s):
+        """Process string received from publisher."""
+
+        print(self, ':', s.upper())
+        self.process_ct += 1
+        if self.process_ct == self.process_max:
+            self.publisher.unsubscribe(self)
+
+    def __repr__(self):
+        return self.name
+
+
+if __name__ == '__main__':
+
+    publisher = Publisher()
+
+    for i, line in enumerate(('ISSUE0', 'ISSUE1', 'ISSUE2', 'ISSUE3', 'ISSUE4', 'ISSUE5')):
+        newsub = SimpleSubscriber('Sub' + str(i), publisher)
+        print("-" * 10)
+        publisher.publish(line)
+
+Good work inventing a different, entirely Publisher-based solution.
+)
+###########################################
+
+
+
+###########################################
+Lesson 5, Quiz 1
+Question 1:
+Which two modules can be used to record profiling information from a Python program? Which is preferred?
+They are "cProfile" and "profile" modules. 
+In case of profiling long-running programs, "cProfile" is more preferable than "profile" 
+since it is a C extension with reasonable overhead (and hence faster then "profile").
+
+Question 2:
+What are the three different restrictions you can use to filter statistics output?
+- Restrict the output to the given number of lines
+- Restrict the output to the given proportion of entries
+- Restrict the output to those entries whose filename whose filename:lineno(function) fields contain the given regular expression.
+
+Question 3:
+What module would you use to time snippets of code?
+timeit
+
+############################
+Lesson 5, Project 1
+Here are your instructions:
+Project: Take the following function and using timings 
+(and profiling if necessary to determine where the program is spending its time), 
+reduce its execution time as much as you can. 
+You should be able to get it down to less than one third of what it is now.   
+Test both functions in the same file (the original and your faster version) to 
+compare their respective execution times.  
+Also confirm that they give the same answer.
+
+groffle.py:
+
+""" 
+Program for optimization. Python 4, Lesson 5. 
+Calculates the groffle speed of a knurl widget 
+of average density given by user input. 
+""" 
+
+from math import log 
+from timeit import Timer 
+
+def groffle_slow(mass, density): 
+    total = 0.0 
+    for i in range(10000): 
+        masslog = log(mass * density) 
+        total += masslog/(i+1)
+
+    return total
+
+mass = 2.5 
+density = 12.0 
+
+timer = Timer("total = groffle_slow(mass, density)", 
+ "from __main__ import groffle_slow, mass, density") 
+print("time:", timer.timeit(number=1000)) 
+
+(Good work.
+
+For some reason this version will be even faster and produce less error:
+
+def groffle_fast(mass, density):
+    """We replace the loop with the sum built-in and a list comprehension"""
+    total = 0.0
+    masslog = log(mass * density)
+    return sum([masslog/i for i in range(1, 10001)])
+)
+  
+############################
+Lesson 6, Quiz 1
+Question 1:
+Which class is at the root of the exception inheritance hierarchy?
+BaseException
+
+Question 2:
+Which class (or subclasses thereof) should you subclass in defining your own exceptions?
+Exception
+
+Question 3:
+What might stop an "except ArithmeticError" exception handler from being triggered by a ZeroDivisionError exception?
+It is when an "except ZeroDivisionError" is handled before "except ArithmeticError".
+  
+######
+Lesson 6, Project 1
+Here are your instructions:
+Write a subclass of the standard dict class. 
+Its __init__() method should take one argument, which will be used as a default value when 
+a non-existent key is accessed (it should also call the standard dict's __init__() with 
+no arguments). 
+Its __getitem__() method should attempt to use the standard dict.__getitem__(), 
+but any KeyError exceptions should be handled by returning the default value passed to __init__() 
+on creation. 
+Write a small test program for your object.
+
+(Good work.
+
+    def __init__(self, default_value):
+        dict.__init__(self)
+        self._default_value = default_value
+
+could also be expressed as:
+
+    def __init__(self, default_value):
+        super().__init__()
+        self._default_value = default_value
+
+)
+  
+############################
+Lesson 7, Quiz 1
+Question 1:
+What does the @functools.wraps decorator do?
+It makes decorated functions keep their names and docstrings from being changed by decorators.
+
+Question 2:
+When using a class as a decorator, which method performs the wrapping?
+__call__()
+(
+Mentor Comments:
+think of Composable in Lesson1 Project1 and of going
+
+@Composable
+def f(x):  return x * x
+
+f(2) would now return 4, because f(2) is now
+calling a Composable type object.  But what swallowed
+your f in the first place?  What method of Composable?
+)
+
+Correction:
+class method
+(
+it's a magic method.  
+@Blah
+def f(x):
+   return x
+
+"eats" f to return an instance called f that was actually
+swallow by Blah.  That's like going
+
+def f(x):
+    return x
+f = Blah(f)
+
+as with any class, when you call it by name with an argument,
+what method are you triggering (not __call__)?
+)
+
+Correction
+the __init__() method
+
+Question 3:
+What decorator would you use to create a method that does not receive the instance as the first argument?
+Parameterizing decorator
+
+(Mentor Comments:
+there are builtin functions, like property, that with used as a 
+decorator (like @property) will turn methods into "unbound"
+methods, meaning no longer designed to be called on an
+instance with a self as a first argument.  What would be one
+example of such a decorator.
+)
+
+Correction:
+@staticmethod
+
+############################
+Lesson 7, Project 1
+Here are your instructions:
+Write a decorator function addarg() that takes an argument and adds that argument as the first argument 
+to all calls to decorated functions. So if you wrote:
+
+@addarg(1)
+def prargs(*args):
+ return args
+prargs(2, 3)
+prargs("child") 
+
+the output would be: 
+(1, 2, 3)
+(1, 'child')
+
+Write a test program to verify the decorator's operation.
+
+(Overall Comments:
+Nice job.
+
+I added another test which passed:
+
+    @addarg(10)
+    def sumall(*seq):
+        return sum(seq)  # add em up
+             
+    class TestDecorator(unittest.TestCase):
+        
+        def test_prargs(self):
+            self.assertTrue(prargs(2, 3), "(1, 2, 3")
+            self.assertTrue(prargs("child"), "(1, 'child')")
+
+        def test_sumall(self):
+            self.assertEqual(sumall(1,2,3), 16, "Not the right sum 10 + 1 + 2 + 3")
+            
+Good work.
+)
+############################
+
+
+Lesson 8, Quiz 1
+Question 1:
+How does a for loop extract values from a generator?
+It extract values one by one by calling the generator’s next() function.
+
+(Mentor Comments:
+correct.  Or you could say the iterator's __next__ method is called directly -- makes no material difference
+
+In the case of a generator iterator (an iterator defined by a generator function), calling __next__ is what
+causes it to execute until the a yield is encountered, at which point control is handed back to the caller
+and so forth.
+)
+
+Question 2:
+Which generator can be used to concatenate multiple sequences?
+itertools.chain()
+
+Question 3:
+What is the difference between a generator expression and a list comprehension?
+A generator expression return values on the fly and hence is memory-efficient when 
+dealing with large data streams. However, it exhausts after generating all values.
+A list comprehension stores all values in memory, hence it is convenient for 
+random access in the list but inefficient when handling with large data.
+
+(Mentor Comments:
+all good.
+to be more nuanced, generator functions in particular may build up lists or other growing data structures
+internally, and are good for that precisely because they "save state" between calls to __next__.  For 
+example, a sweet algorithm for generating successive Bernoulli numbers requires keeping a list of all
+the Bernoullis generated so far, to get the next one.  So inside the generator is a growing list of numbers.
+Generator expressions are more light weight and its harder to imagine them betting "heavier" as they go, but maybe I just haven't thought about it enough.
+)
+  
+
+############################
+Lesson 8, Project 1
+Here are your instructions:
+Write a program that uses timeit() to show the difference between a list comprehension 
+and the list() function applied to:
+
+a list of a million random numbers.
+a generator that generates a sequence of a million random numbers. 
+
+(
+A little fine tuning would be good.  Note that you're not actually asked to sum anything, just to 
+measure the time associated with creating million-random-number lists.
+
+Rather than have the work of coming up with a million random numbers already done prior to importing, 
+that work should occur within timeit.  
+
+The way to make that happen is to have functions that get called:
+
+def makelist( ):
+     return [random() for j in range(MILLION)]
+
+genlist = (random() for j in range(MILLION)) # generator expression
+
+Having genlist defined even outside a function is allowed as the actual
+work of number generation has not been done yet.  That would happen 
+inside timeit, perhaps with list(genlist).
+
+Also testable (not required, an option):
+
+def randgen():
+    for _ in range(MILLION):
+        yield random()
+
+Inside timeit, something like "list(randgen())" would be the measured step.
+
+Again, a goal is to postpone the actual work of creating a million numbers until 
+inside of timeit.
+
+Good work so far.
+)
+
+Correction
+Thank you for your help.
+If my correction is correct, using the list comprehension gives better performance than the list() function in both cases.
+
+  
+############################
+Lesson 9, Quiz 1
+Question 1:
+Given an object o, how would you determine whether or not the object has a method "m"?
+If hasattr(o, ‘m’) returns True, it means the object o has the method “m”.
+
+(Mentor Comments:
+it means o has an attribute or property named 'm' but 'm' is not necessarily a method.
+
+This condition should be "anded" with another than pins m down, as to whether it's a method or not,
+now that we know there's *something*.  Beware of uppercasing Python keywords just because it's
+at the start of a sentence.  English rules of grammar take a back seat around here.
+)
+
+Correction:
+We need to check if object ‘o’ has an attribute named ‘m’ and if o.m is  
+callable or not.
+
+if hasattr(o, ‘m’):
+    if callable(o.m):
+        print(“object ‘o’ has method ‘m’”)
+
+(Mentor Comments:
+right, or you can and these two conditions together.  Given A and B, if A is False, B 
+will not even be looked at, so no exceptions from asking about o.m even where there
+is no "m" in o.  By the way, you must b cutting and pasting your quote marks from
+a wordprocessor according to a different text encoding than used in our quizzes. 
+)
+
+Question 2:
+Given a module m, how would you produce a list object containing just the names of the classes defined in the module?
+Use the “inspect” module’s getmembers() function with the “isclass” predicate:  
+inspect.getmembers(m, inspect.ismethod)
+
+(Mentor Comments:
+why do you use the ismethod predicate as an example I wonder?
+The goal is a list of names only, whereas getmembers is more like globals in returning name, value pairs.
+)
+
+Correction:
+[class_obj[0] for class_obj in inspect.getmembers(m, inspect.isclass)]
+
+
+Question 3:
+Given a function f, how would you get a string of the names of its positional and keyword arguments? Example: if the function is: def f(a,b,c,d=3,*,e): print(a,b,c,d,e) then how would you get output '(a, b, c, d=3, *, e)' from input f? 
+inspect.formatargspec(*inspect.getfullargspec(f))
+
+
+############################
+Lesson 9, Project 1
+Here are your instructions:
+Write a program that imports a module and then goes through the module's namespace to find any functions (you may assume any object with a __call__() method is a function) and print the names of the functions and their arguments, in the same way as it might appear in a def statement.
+
+(Excellent.
+
+To make it more generic, you might go:
+
+import os as m
+
+and then use m from then on.  Now you only need to change the model in one place e.g.
+
+import json as m
+
+To make it a matter of user input, you could even go:
+
+mod = input("What module? ")
+m = __import__(mod)  #  built-in __import__ takes a string argument
+)
+
+
+############################
+Lesson 10, Quiz 1
+Question 1:
+What happens if you make a second call to a Thread's start() method?
+The console outputs a runtime error stating that threads can only be started once.
+(RuntimeError: threads can only be started once)
+
+Question 2:
+Which function from the threading module do you use to access the current number of threads?
+active_count()
+
+Question 3:
+What method would you call to wait for a thread t to terminate?
+join()
+
+(Mentor Comments:
+t.join()
+remember to use the names given
+)
+
+
+############################
+Lesson 10, Project 1
+Here are your instructions:
+Write a program that determines whether changing the current directory using os.chdir 
+in one thread changes the current directory for: 
+
+a thread that already existed before the call to os.chdir.
+a thread that is created after the call to os.chdir. 
+You are expected to state your conclusions, based on experiment, in your comments.
+
+Answer:
+Let’s call
++ thread0: the thread that already existed before the call to os.chdir
++ thread1: the thread that calls the os.chdir
++ thread2: the thread that is created after the call to os.chdir
+
+Based on my experiment, 
++ the current directory of thread0 is the same as thread1’s current directory before the call to os.chdir 
+but changes the new directory after the call to os.chdir
++ the current directory of thread2 is the new directory after the call to os.chdir
+
+Hence, after the call to os.chdir, the current directory of all threads are changed 
+to the new directory.
+
+(Mentor Comments:
+Right, there's only one current working directory per process.  Threads all share the same global setting for 
+current working directory and when one thread changes it, it changes for all.  This is not to say different threads
+cannot keep writing in different directories, just that they will always be "on the same page" regarding which
+directory is so-called "current".  In other words, os.chdir(), even if run in just one thread, changes the 
+environment for all threads.
+
+Before changing: thread0 was in V:\workspace\tnguyen7.148.7280.1.Python04_Homework10\src
+thread0 started
+Before changing: thread1 was in V:\workspace\tnguyen7.148.7280.1.Python04_Homework10\src
+thread1 started
+Waiting 3 seconds for thread2 to start
+After changing: thread1 is now in V:\workspace
+thread0 idling: 1 seconds passed
+thread0 idling: 2 seconds passed
+thread0 idling: 3 seconds passed
+After changing: thread2 is now in V:\workspace
+thread2 started
+thread0 idling: 4 seconds passed
+thread0 idling: 5 seconds passed
+After changing: thread0 is now in V:\workspace
+)
+
+
+##############################
+Lesson 11, Quiz 1
+Question 1:
+Which class's instances can be used to ensure that only one thread can be executing a particular piece of code at any one time?
+Lock, RLock, Condition, Semaphore, Event in threading module.
+
+(Mentor Comments:
+Lock is the most apropos class with these others having to do 
+with multi-threading
+)
+
+Question 2:
+Which queue.Queue method should you call to decrement the Queue's task counter?
+queue.Queue.task_done()
+
+Question 3:
+How do you remove an item from a queue.Queue object named q?
+q.get()
+
+  
+############################
+Lesson 11, Project 1
+Here are your instructions:
+Modify the control module from the final example of the lesson so that, instead of asking the user for input, it generates a random string of alphabetic characters of length one thousand. Similarly modify the output routine to print only the length of the final string. Test the time it takes the program to run. Make sure the workers report when done by printing to console.
+
+
+
+############################
+Lesson 12, Quiz 1
+Question 1:
+Which class in the multiprocessing library is used to model processes?
+Process
+
+Question 2:
+Why is it important to write multiprocessing control programs as a module with if __name__ == "__main__":?
+It is to let the action of starting processes only performed by 
+the process that runs the control program, not by any subprocesses 
+that try to import the module.
+
+Question 3:
+What two types of Queue does the multiprocessing module provide, and what is the difference between them?
+They are JoinableQueue and Queue. The difference is:
+- Queue lacks the task_done() and join() methods,
+- When JoinableQueue is used, task_done() must be called for each task removed from the queue.
+
+
+############################
+Lesson 12, Project 1
+Here are your instructions:
+Modify the control module from the final example of the lesson so that, instead of asking user for input, it generates a random string of alphabetic characters of length one thousand. Similarly modify the output routine to print out the length of the final string.
+
+  
+############################
+Lesson 13, Quiz 1
+Question 1:
+How do you set the attributes of a function?
+Use setattr() on that function.
+Example: setattr(some_func, ‘some_attr’, some_value)
+
+(Mentor Comments:
+or just 
+
+f.attr = value
+)
+
+Question 2:
+What statement is used to identify names in a function's surrounding scope?
+nonlocal
+
+Question 3:
+Which methods might the interpreter call to evaluate the expression a // b?
+The interpreter first attempts to call a.__floordiv__(b).
+If this fails then it falls back to b.__rfloordiv__(a)
+
+(Mentor Comments:
+a, b have to be differnent types (from each other) 
+for __rfloordiv__ to be sought.
+)
+
+############################
+Lesson 13, Project 1
+Here are your instructions:
+Write a subclass sstr of the standard str type that implements the "<<" and ">>" methods as a cyclic shifting of the characters in the string. 
+It should pass the following tests, which you should embody as unit tests in a separate test module:
+
+>>> s1 = sstr("abcde")
+>>> s1 << 0
+'abcde'
+>>> s1 >> 0
+'abcde'
+>>> s1 << 2
+'cdeab'
+>>> s1 >> 2
+'deabc'
+>>> s1 >> 5
+'abcde'
+>>> (s1 >> 5) << 5 == 'abcde'
+True
+
+
+(Overall Comments:
+Well done.
+
+A simpler sstr:
+
+class sstr(str):
+    def __rshift__(self,other):
+        return sstr(self[-other:] + self[:-other])     
+    def __lshift__(self,other):
+        return sstr(self[other:] + self[:other])
+)
+
+
+
+############################
+Lesson 14, Quiz 1
+Question 1:
+Which method of a context manager is called before execution of the controlled suite of the with statement?
+__enter__()
+
+Question 2:
+What form does a context manager take when created with the @contextlib.contextmanager decorator?
+A generator function which contains precisely one 'yield' expression
+
+Question 3:
+What is the default precision for a decimal context?
+28 decimal digits
+  
+
+############################
+Lesson 14, Project 1
+Here are your instructions:
+Write a context manager class that suppresses any ValueError exceptions that 
+occur in the controlled suite, but allows any other exception to be raised in the 
+surrounding context.
+
+
+
+############################
+Lesson 15, Quiz 1
+Question 1:
+Does accessing a memory-mapped file using indexing affect the position used by the readline() method?
+Yes if the content of the file is changed by subscripting.
+
+(Mentor Comments:
+readline() is read-only, content is not changed
+)
+
+Correction:
+No, because readline() is read-only.
+
+Question 2:
+What should the first argument to the mmap.mmap() function be?
+A file number, which can be obtained by calling the file's "fileno()" method.
+
+Question 3:
+How does mmap.mmap() achieve high-speed inter-process communication?
+mmap.map() allows processes to access to the same shared address space,
+hence high-speed inter-process communication can be achieved.
+
+############################
+Lesson 15, Project 1
+Here are your instructions:
+Write a program that creates a ten megabyte data file in two different ways, and time each method. 
+The first technique should create a memory-mapped file and write the data by setting one chunk 
+at a time using successively higher indexes. 
+The second technique should create an empty binary file and repeatedly use the write() method 
+to write a chunk of data. 
+Show how the timings vary with the size of the chunk.
+
+Here is the result when varying with the chunk size (each result is retreived from one run)
+
+chunk size(bytes)    1        2     4      8      16     32     1024
+mmap time (s)      19.84    5.14   2.96   1.68   0.98   0.66    0.30
+fwrite time  (s)   30.58    9.06   4.51   2.77   1.56   0.82    0.33
+
+We can see that the first technique (using mmap) gives better performance than the second technique, 
+especially when the chunk size is small (1 byte ~ 32 bytes) but the difference is small when the chunk 
+size is big (1024 bytes)
+
+
+(Overall Comments:
+Good work so far.
+
+"using successively higher indexes" means the memory mapped file 
+should use slice assignment syntax to fill it with chunks, 
+something more like:
+
+        while pos+l < PAGESIZE:
+                mapf[pos:pos+l] = bytestr
+                pos+=1
+
+Probably the rest of your code will remain intact
+
+
+Overall Comments:
+Now this part:
+
+"Show how the timings vary with the size of the chunk."
+
+You should have repeated timings of the two functions as they write with different
+chunk sizes.  CHUNK_SIZE should not be treated as fixed throughout the program;
+it should be a variable which changes in a loop.  It should range through several 
+orders of magnitude e.g  1, 512, 1024, 1024 * 10, 2014 * 10 and so on.  Even 
+1048576 is a good chunk size.
+
+Good work so far.
+)
+  
+############################
+Lesson 16, Quiz 1
+Question 1:
+What is the largest Python conference in the world?
+PyCon
+
+(
+Mentor Comments:
+Yes.  PyCon is a brand managed by Python Software Foundation, 
+and corresponds to pycon.org web domain.
+The subdomains such as cn.pycon.org tend to be meted out on request (a mapping operation)
+Technically then, it's the US Pycon (us.pycon.org) that has so far achieved the highest attendence rates, a record that could easily be broken
+)
+
+Question 2:
+Do you have to know the C language to become a Python core contributor?
+No, it is not a must.
+
+(Mentor Comments:
+it really helps to learn C in general so nothing about this question should be construed as steering you away from C.  
+I'm not suggesting everyone learn C.  Python is a powerful computer language whereas C is more like Sanskrit, 
+the basis of a whole family of languages and a conceptual bridge to chip-level assembler, a bridge to hardware.  
+C is "close to the metal". 
+Python is at 10000 feet, where you'd rather be if trying to cover a lot of distance.  
+C powers the jets.
+)
+
+Question 3:
+What is a sprint?
+It is a get-together of people involved in a project to give a focused development on a project.
+
+  
+############################
+Lesson 16, Project 1
+Here are your instructions:
+Answer a Python-related question on a public forum such as StackOverflow or 
+python-list@python.org and document your correspondence with the questioner. 
+If any private emails are involved, you should privately ask their permission to 
+submit their mails as part of your solution to the project.
+
+Here is the link of my answer to a question on StackOverflow.
+bit.ly/1anVjTr
